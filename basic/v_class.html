@@ -145,9 +145,11 @@
 </div>
 
 <div id="app">
-  <div class="box"></div>
+  <!-- { 要加入的 className: 判斷式} -->
+  <!-- 動態方式切換 Class 狀態 -->
+  <div class="box" :class="{ 'rotate': isTransform }"></div>
   <hr>
-  <button class="btn btn-outline-primary">選轉物件</button>
+  <button class="btn btn-outline-primary" @click="isTransform = !isTransform">選轉物件</button>
 </div>
 
 <script>

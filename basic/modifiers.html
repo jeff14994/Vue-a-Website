@@ -148,28 +148,42 @@
 </div>
 
 <div id="app">
-  <input type="text" class="form-control" v-model="text">
-  <button class="btn btn-primary mt-1">反轉字串</button>
+  <!-- enter, click => v-on: === @ -->
+  <!-- href => v-bind === : -->
+  <input type="text" class="form-control" @keyup.enter="reverseText" v-model="text">
+  <a :href="link" class="btn btn-primary mt-1" @click.prevent="reverseText">反轉字串</a>
   <div class="mt-3">
     {{ newText }}
   </div>
+  
 </div>
 
 <script>
+  // jQuery 寫法 - 避免使用預設格式 -> 不會觸發連結
+  // $(document).ready(function () {
+  //   $('a.btn').on('click', function(evt) {
+  //     console.log(evt);
+  //     evt.preventDefault();
+  //   })
+  // });
 var app = new Vue({
   el: '#app',
   data: {
     text: '',
-    newText: ''
+    newText: '',
+    link: 'https://www.google.com.tw/',
   },
   // 請在此撰寫 JavaScript
   methods: {
     reverseText(event) {
+      console.log(event);
+      // event.preventDefault();
       this.newText = this.text.split('').reverse().join('');
     }
   }
 });
 </script>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 <!-- 解答：
 reverseText(event) {

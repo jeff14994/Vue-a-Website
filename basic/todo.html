@@ -144,63 +144,67 @@
   </ol>
 </div>
 
-
+<!-- todolist 練習開始之處 -->
 <div id="app">
   <div class="input-group mb-3">
     <div class="input-group-prepend">
       <span class="input-group-text" id="basic-addon1">待辦事項</span>
     </div>
-    <input type="text" class="form-control" placeholder="準備要做的任務">
+    <!-- v-model 綁定新資料(newTodo) -->
+    <input type="text" class="form-control"  v-model="newTodo" @keyup.enter="addTodo" placeholder="準備要做的任務">
     <div class="input-group-append">
-      <button class="btn btn-primary" type="button">新增</button>
+      <button class="btn btn-primary" type="button" @click="addTodo" >新增</button>
     </div>
   </div>
   <div class="card text-center">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="#">全部</a>
+          <!-- 使用 visibility 來控制切換到哪一個頁籤，點擊後會更改 visibility 的值，並切區動畫面更改 -->
+          <a class="nav-link" :class="{'active': visibility == 'all'}" @click.prevent="visibility = 'all'" href="#">全部</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="#">進行中</a>
+          <a class="nav-link" :class="{'active': visibility == 'active'}" @click.prevent="visibility = 'active'" href="#">進行中</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">已完成</a>
+          <a class="nav-link" :class="{'active': visibility == 'completed'}" @click.prevent="visibility = 'completed'" href="#">已完成</a>
         </li>
       </ul>
     </div>
     <ul class="list-group list-group-flush text-left">
-      <li class="list-group-item">
-        <div class="d-flex">
+      <!-- 判斷 todos 狀態再顯示 -->
+      <!-- @dblclick 代表 double click -->
+      <li class="list-group-item" v-for="(item, key) in filteredTodos" @dblclick="editTodo(item)">
+        <!-- 使用 v-if 控制 編輯時顯示（切換到）哪些畫面 -->
+        <div class="d-flex" v-if="item.id !== cacheTodo.id">
           <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="a1">
-            <label class="form-check-label" for="a1">
-              Cras justo odio
+            <!-- v-bind:id 綁定 id ， v-bind:for 綁定 for 不等於 v-for -->
+            <!-- :class 使用 v-bind:class 綁定 class 的值 -->
+            <input type="checkbox" class="form-check-input" v-model="item.completed" :id="item.id">
+            <label class="form-check-label" 
+            :class="{'completed': item.completed }"
+            :for="item.id">
+              {{ item.title }}
             </label>
           </div>
-          <button type="button" class="close ml-auto" aria-label="Close">
+          <button type="button" class="close ml-auto" aria-label="Close" @click="removeTodo(item)">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
+        <!-- 使用 v-if 控制 編輯時顯示（切換到）哪些畫面 -->
+        <!--  keyup.esc 取消編輯-->
+        <!-- keyup.enter 完成新的編輯 -->
+        <!-- @blur 當元素失去焦點時，會觸發 -->
+        <input type="text" class="form-control" 
+          v-model="cacheTitle"
+          @keyup.esc = "cancelEdit()"
+          @keyup.enter="doneEdit(item)"
+          @blur="cancelEdit(item)"
+          v-if="item.id === cacheTodo.id">
       </li>
-      <li class="list-group-item">
-        <div class="d-flex">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="a1">
-            <label class="form-check-label completed" for="a1">
-              Cras justo odio
-            </label>
-          </div>
-          <button type="button" class="close ml-auto" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-      </li>
-      <li class="list-group-item">
-        <input type="text" class="form-control">
-      </li>
-    </ul>
     <div class="card-footer d-flex justify-content-between">
+      <!-- TODO: 顯示還有幾筆資料未完成 -->
+      <!-- TODO: 清除所有任務 -->
       <span>還有 3 筆任務未完成</span>
       <a href="#">清除所有任務</a>
     </div>
@@ -210,7 +214,109 @@
 <script>
 var app = new Vue({
   el: '#app',
-  data: {},
+  data: {
+    newTodo: '',
+    // todos 使用 array 存資料
+    todos: [
+      {
+        id: '123',
+        title: '代辦清單範例',
+        completed: false
+      }
+    ],
+    // 控制顯示哪一個頁籤
+    visibility: 'all',
+    cacheTodo: {},
+    cacheTitle: '',
+  },
+  methods: {
+    // Add items to todos
+    addTodo: function() {
+      // 獲取輸入的資料
+      // 使用 .trim() 將空白刪除
+      var value = this.newTodo.trim();
+      var timestamp = Math.floor(Date.now());
+      // console.log(value, timestamp);
+      // 若輸入為空，則無法新增資料
+      if (!value) {
+        return;
+      }
+      this.todos.push({
+        id: timestamp,
+        title: value,
+        completed: false,
+      })
+      // 將輸入欄位清空
+      this.newTodo = ''
+    },
+    // Remove items from todos
+    removeTodo: function(todo) {
+      var vm = this;
+      // 法ㄧ：
+      // 避免換頁籤時順序改變（e.g. 跳掉進行中的頁籤），導致刪錯資料
+      // 透過 比對 傳入值的 todo id（相對值） 與 item id（絕對值） 進行比較
+      // 透過 todo id 去刪除實際上的 item id
+      // var newIndex = '';
+      // vm.todos.forEach(function(item, key) {
+      //   if(todo.id == item.id) {
+      //     newIndex = key;
+      //   }
+      // })
+      // 法二：進階版：
+      // 直接透過 findIndex
+      var newIndex = vm.todos.findIndex(function(item, key) {
+        return todo.id === item.id;
+      })
+      this.todos.splice(newIndex, 1)
+
+    },
+    editTodo: function(item) {
+      console.log(item);
+      this.cacheTodo = item;
+      this.cacheTitle = item.title;
+    },
+    cancelEdit: function() {
+      console.log('hihi');
+      this.cacheTodo = {};
+    },
+    doneEdit: function (item) {
+      item.title = this.cacheTitle;
+      // 輸入復原
+      this.cacheTitle = '';
+      this.cacheTodo = {};
+    }
+  },
+  computed: {
+    // 過濾 todos 狀態
+    filteredTodos: function() {
+      if (this.visibility == 'all') {
+        return this.todos;
+      } else if (this.visibility == 'active') {
+        // 與 data 的 newTodo 不同
+        var newTodos = [];
+        this.todos.forEach(function(item) {
+          // 如果 todos 未完成，新增到 newTodos
+          if (!item.completed) {
+            newTodos.push(item);
+          }
+        })
+        return newTodos;
+      } else if (this.visibility == 'completed') {
+        // 與 data 的 newTodo 不同
+        var newTodos = [];
+        this.todos.forEach(function(item) {
+          // 如果 todos 已完成，新增到 newTodos
+          if (item.completed) {
+            newTodos.push(item);
+          }
+        })
+        return newTodos;
+      } else {
+        return [];
+      }
+      
+    }
+  }
 });
 </script>
 
@@ -219,7 +325,6 @@ var app = new Vue({
   text-decoration: line-through
 }
 </style>
- 
         </div>
       </div>
     </div>

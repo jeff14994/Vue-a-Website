@@ -147,12 +147,27 @@
 </div>
 
 
-<div>
-
+<div id='app'>
+  {{text}}
+</div>
+<div id='app2'>
+  {{text}}
 </div>
 
-
 <script>
+  // Vue 不可以用巢狀
+  var app = new Vue({
+    el: '#app',
+    data: {
+      text: '這是一段話o'
+    }
+  })
+  var app = new Vue({
+    el: '#app2',
+    data: {
+      text: '這是一段話2'
+    }
+  })
 // var data = {
 //   text: '這是一段話'
 // }
