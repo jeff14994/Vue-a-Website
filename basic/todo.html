@@ -205,8 +205,8 @@
     <div class="card-footer d-flex justify-content-between">
       <!-- TODO: 顯示還有幾筆資料未完成 -->
       <!-- TODO: 清除所有任務 -->
-      <span>還有 3 筆任務未完成</span>
-      <a href="#">清除所有任務</a>
+      <span>還有 {{ countRemainTodo }} 筆任務未完成</span>
+      <a @click.prevent="removeAllTodos()" href="#">清除所有任務</a>
     </div>
   </div>
 </div>
@@ -276,7 +276,7 @@ var app = new Vue({
       this.cacheTitle = item.title;
     },
     cancelEdit: function() {
-      console.log('hihi');
+      // console.log('hihi');
       this.cacheTodo = {};
     },
     doneEdit: function (item) {
@@ -284,6 +284,12 @@ var app = new Vue({
       // 輸入復原
       this.cacheTitle = '';
       this.cacheTodo = {};
+    },
+    removeAllTodos: function () {
+      // 如果資料還有，則刪除到沒有為止
+      while(this.todos.length) {
+        this.todos.pop();
+      }
     }
   },
   computed: {
@@ -315,6 +321,16 @@ var app = new Vue({
         return [];
       }
       
+    },
+    // 即時計算剩下的 todolist
+    countRemainTodo: function() {
+      var remainTodo = 0
+      this.todos.forEach(function(item) {
+        if (!item.completed) {
+          remainTodo += 1;
+        }
+      })
+      return remainTodo;
     }
   }
 });
