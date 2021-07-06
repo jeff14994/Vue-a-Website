@@ -119,13 +119,22 @@
     <thead>
       <tr>
         <th>品名</th>
-        <th class="click">價格 
+        <!-- 1. 綁定按鈕 -> 觸發條件 -->
+        <!-- 按下按鈕後：指定過濾條件為 price，並且反轉排序狀態 -->
+        <!-- @click 可以使用 "," 放入多個條件 -->
+        <th class="click" @click="sortType = 'price', sortStatus = !sortStatus">價格 
           <!-- isReverse 為反轉 className -->
-          <span class="icon isReverse">
+          <!--  2. 設定限制式 -->
+          <span class="icon" :class="{ isReverse: sortStatus }" v-if="sortType === 'price'">
+            <!-- <span class="icon"></span> -->
             <i class=" fas fa-angle-up text-success"></i>
           </span>
         </th>
-        <th class="click">到期日 
+        <th class="click" @click="sortType = 'expiryDate', sortStatus = !sortStatus">到期日 
+          <span class="icon" :class="{ isReverse: sortStatus }" v-if="sortType === 'expiryDate'">
+            <!-- <span class="icon"></span> -->
+            <i class=" fas fa-angle-up text-success"></i>
+          </span>
         </th>
       </tr>
       <tr v-for="item in data">
@@ -153,6 +162,8 @@
 var app = new Vue({
   el: '#app',
   data: {
+    sortType: 'price',
+    sortStatus: true,
     data: [
       {
         name: '巧呼呼蘇打水',
@@ -182,7 +193,28 @@ var app = new Vue({
     ],
   },
   // 請在此撰寫 JavaScript
-  computed: {}
+  computed: {
+    isReverse: function () {
+      const ptr = this;
+      let type = ptr.sortType;
+      let sortList = ptr.data
+      // 判斷是否已經排序
+      if (this.sortStatus) {
+        sortList = ptr.data.sort(function(a, b) {
+          // 使用欲排序的種類進行排序
+          // 使用 [] 取值
+          return b[type] - a[type];
+      })
+        return sortList;
+      } else {
+        sortList = ptr.data.sort(function(a, b) {
+          return a[type] - b[type];
+      })
+        return sortList;
+      }
+      
+    }
+  }
 });
 </script>
 
