@@ -122,19 +122,27 @@
         <!-- 1. 綁定按鈕 -> 觸發條件 -->
         <!-- 按下按鈕後：指定過濾條件為 price，並且反轉排序狀態 -->
         <!-- @click 可以使用 "," 放入多個條件 -->
-        <th class="click" @click="sortType = 'price', sortStatus = !sortStatus">價格 
+        <th class="click" @click="sortPrice">價格 
           <!-- isReverse 為反轉 className -->
           <!--  2. 設定限制式 -->
           <!--  sortType 等於 'price' 才會顯示-->
-          <span class="icon" :class="{ isReverse: sortStatus }" v-if="sortType === 'price'">
+          <span class="icon" v-show="showAngleUpPrice">
             <!-- <span class="icon"></span> -->
-            <i class=" fas fa-angle-up text-success"></i>
+            <i class="fas fa-angle-up text-success"></i>
+          </span>
+          <span class="icon" v-show="showAngleDownPrice">
+            <!-- <span class="icon"></span> -->
+            <i class="fas fa-angle-down text-success"></i>
           </span>
         </th>
-        <th class="click" @click="sortType = 'expiryDate', sortStatus = !sortStatus">到期日 
-          <span class="icon" :class="{ isReverse: sortStatus }" v-if="sortType === 'expiryDate'">
+        <th class="click" @click="sortExpiryDate">到期日 
+          <span class="icon" v-show="showAngleUpDate">
             <!-- <span class="icon"></span> -->
-            <i class=" fas fa-angle-up text-success"></i>
+            <i class="fas fa-angle-up text-success"></i>
+          </span>
+          <span class="icon" v-show="showAngleDownDate">
+            <!-- <span class="icon"></span> -->
+            <i class="fas fa-angle-down text-success"></i>
           </span>
         </th>
       </tr>
@@ -163,8 +171,8 @@
 var app = new Vue({
   el: '#app',
   data: {
-    sortType: 'price',
     sortStatus: true,
+    sortType: 'price',
     data: [
       {
         name: '巧呼呼蘇打水',
@@ -193,28 +201,46 @@ var app = new Vue({
       }
     ],
   },
+  methods: {
+    sortPrice: function() {
+      this.sortStatus = !this.sortStatus;
+      this.sortType = 'price';
+    },
+    sortExpiryDate: function() {
+      this.sortStatus = !this.sortStatus;
+      this.sortType = 'expiryDate';
+    }
+
+  },
   // 請在此撰寫 JavaScript
   computed: {
     isReverse: function () {
       const ptr = this;
-      let type = ptr.sortType;
-      let sortList = ptr.data
-      // 判斷是否已經排序
-      if (this.sortStatus) {
-        sortList = ptr.data.sort(function(a, b) {
-          // 使用欲排序的種類進行排序
-          // 使用 [] 取值
-          return b[type] - a[type];
-      })
-        return sortList;
-      } else {
+      let sortList = ptr.data;
+      let type = this.sortType;
+      if (ptr.sortStatus) {
         sortList = ptr.data.sort(function(a, b) {
           return a[type] - b[type];
-      })
-        return sortList;
+        })
+      } else {
+        sortList = ptr.data.sort(function(a, b) {
+          return b[type] - a[type];
+        })
       }
-      
-    }
+      return sortList;
+    },
+    showAngleUpPrice: function() {
+      return this.sortType === 'price' && this.sortStatus === false;
+    },
+    showAngleDownPrice: function() {
+      return this.sortType === 'price' && this.sortStatus === true;
+    },
+    showAngleUpDate: function() {
+      return this.sortType === 'expiryDate' && this.sortStatus === false;
+    },
+    showAngleDownDate: function() {
+      return this.sortType === 'expiryDate' && this.sortStatus === true;
+    },
   }
 });
 </script>
