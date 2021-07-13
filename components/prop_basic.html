@@ -121,10 +121,15 @@
 </div>
 
 <div id="app">
+  <!--  不可以使用 imgUrl，大寫改成 "-" -> img-url -->
+  <!-- 由於 JavaScript 命名規則通常都會使用駝峰式寫法 (camelCase)，
+  所以 props 建議使用駝峰式寫法 (camelCase)、
+  HTML 區塊部份建議使用短橫線寫法 (kebab-case)。 -->
   <h2>靜態傳遞</h2>
-  <photo></photo>
+  <photo img-url="https://images.unsplash.com/photo-1522204538344-922f76ecc041?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=50e38600a12d623a878983fc5524423f&auto=format&fit=crop&w=1351&q=80"></photo>
   <h2>動態傳遞</h2>
-  <photo></photo>
+  <!-- 來自 data 的 url -->
+  <photo :img-url="url"></photo>
 </div>
 
 <script type="text/x-template" id="photo">
@@ -137,6 +142,7 @@
 <script>
 Vue.component('photo', {
   // 同學請依據課程內容，自行填寫 Props 的寫法
+  props: ['imgUrl'],
   template: '#photo'
 })
 

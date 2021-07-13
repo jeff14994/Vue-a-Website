@@ -134,8 +134,12 @@
 
 <script>
 Vue.component('counter-component', {
-  data: {
-    counter: 0
+  // data 底下是一個 function
+  // return 一個 object
+  data: function() {
+    return {
+      counter: 0
+    }
   },
   template: '#counter-component'
 })
