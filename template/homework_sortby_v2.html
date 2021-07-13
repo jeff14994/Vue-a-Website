@@ -126,21 +126,21 @@
           <!-- isReverse 為反轉 className -->
           <!--  2. 設定限制式 -->
           <!--  sortType 等於 'price' 才會顯示-->
-          <span class="icon" v-show="showAngleUpPrice">
+          <span class="icon" :class="showAngleUpPrice">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-up text-success"></i>
           </span>
-          <span class="icon" v-show="showAngleDownPrice">
+          <span class="icon" :class="showAngleDownPrice">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-down text-success"></i>
           </span>
         </th>
         <th class="click" @click="sortExpiryDate">到期日 
-          <span class="icon" v-show="showAngleUpDate">
+          <span class="icon" :class="showAngleUpDate">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-up text-success"></i>
           </span>
-          <span class="icon" v-show="showAngleDownDate">
+          <span class="icon" :class="showAngleDownDate">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-down text-success"></i>
           </span>
@@ -230,16 +230,24 @@ var app = new Vue({
       return sortList;
     },
     showAngleUpPrice: function() {
-      return this.sortType === 'price' && this.sortStatus === false;
+      if(this.sortType !== 'price' || this.sortStatus !== false) {
+        return 'hidden';
+      }
     },
     showAngleDownPrice: function() {
-      return this.sortType === 'price' && this.sortStatus === true;
+      if(this.sortType !== 'price' || this.sortStatus !== true) {
+        return 'hidden';
+      }
     },
     showAngleUpDate: function() {
-      return this.sortType === 'expiryDate' && this.sortStatus === false;
+      if(this.sortType !== 'expiryDate' || this.sortStatus !== false) {
+        return 'hidden';
+      }
     },
     showAngleDownDate: function() {
-      return this.sortType === 'expiryDate' && this.sortStatus === true;
+      if (this.sortType !== 'expiryDate' || this.sortStatus !== true) {
+        return 'hidden';
+      }
     },
   }
 });
@@ -259,6 +267,9 @@ var app = new Vue({
 }
 .icon.inverse {
   transform: rotate(180deg)
+}
+.hidden {
+  display: none;
 }
 </style>
 
