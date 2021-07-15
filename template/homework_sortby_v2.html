@@ -126,27 +126,27 @@
           <!-- isReverse 為反轉 className -->
           <!--  2. 設定限制式 -->
           <!--  sortType 等於 'price' 才會顯示-->
-          <span class="icon" :class="showAngleUpPrice">
+          <!-- 兩種寫法： 1. 包在 span 中 -> 記得要 {}，直接用 computed 計算 -> 不用 {} -->
+          <!-- <span class="icon" :class="{inverse: sortStatus, hidden: sortType != 'price'}"> -->
+          <span class="icon" :class="showPriceIcon">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-up text-success"></i>
           </span>
-          <span class="icon" :class="showAngleDownPrice">
-            <!-- <span class="icon"></span> -->
+          <!-- <span class="icon" :class="showAngleDownPrice">
             <i class="fas fa-angle-down text-success"></i>
-          </span>
+          </span> -->
         </th>
         <th class="click" @click="sortExpiryDate">到期日 
-          <span class="icon" :class="showAngleUpDate">
+          <span class="icon" :class="showDateIcon">
             <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-up text-success"></i>
-          </span>
+          <!-- </span>
           <span class="icon" :class="showAngleDownDate">
-            <!-- <span class="icon"></span> -->
             <i class="fas fa-angle-down text-success"></i>
-          </span>
+          </span> -->
         </th>
       </tr>
-      <tr v-for="item in isReverse">
+      <tr v-for="item in sortData">
         <td>{{ item.name }}</td>
         <td>{{ item.price }}</td>
         <td>{{ item.expiryDate }}</td>
@@ -214,7 +214,7 @@ var app = new Vue({
   },
   // 請在此撰寫 JavaScript
   computed: {
-    isReverse: function () {
+    sortData: function () {
       const ptr = this;
       let sortList = ptr.data;
       let type = this.sortType;
@@ -229,26 +229,29 @@ var app = new Vue({
       }
       return sortList;
     },
-    showAngleUpPrice: function() {
-      if(this.sortType !== 'price' || this.sortStatus !== false) {
-        return 'hidden';
+    showPriceIcon: function() {
+      // icon 180 degree rotate in inverse class
+      return {
+        inverse: this.sortStatus, 
+        hidden: this.sortType != 'price'
       }
     },
-    showAngleDownPrice: function() {
-      if(this.sortType !== 'price' || this.sortStatus !== true) {
-        return 'hidden';
+    // showAngleDownPrice: function() {
+    //   if(this.sortType !== 'price' || this.sortStatus !== true) {
+    //     return 'hidden';
+    //   }
+    // },
+    showDateIcon: function() {
+      return {
+        inverse: this.sortStatus, 
+        hidden: this.sortType != 'expiryDate'
       }
     },
-    showAngleUpDate: function() {
-      if(this.sortType !== 'expiryDate' || this.sortStatus !== false) {
-        return 'hidden';
-      }
-    },
-    showAngleDownDate: function() {
-      if (this.sortType !== 'expiryDate' || this.sortStatus !== true) {
-        return 'hidden';
-      }
-    },
+    // showAngleDownDate: function() {
+    //   if (this.sortType !== 'expiryDate' || this.sortStatus !== true) {
+    //     return 'hidden';
+    //   }
+    // },
   }
 });
 </script>
@@ -269,7 +272,9 @@ var app = new Vue({
   transform: rotate(180deg)
 }
 .hidden {
-  display: none;
+  /* display: none; */
+  /* 看不見，但結構在 */
+  opacity: 0;
 }
 </style>
 
