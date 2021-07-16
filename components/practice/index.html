@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app" class="container">
+        <select name="" id="" class="form-control mb-3" v-model="filter">
+            <option value="">--- 請選擇城市 ---</option>
+            <!-- :key="key" 是 index -->
+            <option v-for="(item, key) in location" :key="key" :value="item">{{ item }}</option>
+        </select>
+        <div>
+            <h4>關注城市</h4>
+            <div class="card-columns">
+                <!-- startStatus 為外部 method 使用 v-on:star 進行觸發-->
+                <!-- parent-start? -->
+                <card-component v-for="(item, key) in starAQIData()" v-on:star="starStatus" :data="item" :key="key" :parent-star="stared"></card-component>
+            </div>
+        </div>
+        <hr>
+        <h4>一般城市</h4>
+        <div class="card-columns">
+            <!-- :filter="filter" 可以設定過濾條件 -->
+            <card-component v-for="(item, key) in filterAQIData(filter)" v-on:star="starStatus" :data="item" :key="key" :parent-star="stared" :filter="filter"></card-component>
+        </div>
+    </div>
+        <!-- Card template -->
+        <script type="text/x-template" id="cardComponentTemplate">
+            <!-- data.Status 是天氣狀況，丟入 status 做判斷 -->
+            <div class="card" :class="status(data.Status)">
+                <div class="card-header">{{ data.County }} - {{ data.SiteName}}
+                    <!-- 更新星號 -->
+                <a href="#" class="float-right" @click.prevent="updateStatus(data.SiteName)">
+                    <!-- 空心星星，代表未被加入最我的最愛 -->
+                    <div v-show="parentStar.indexOf(data.SiteName) == -1"><i class="far fa-star"></i></div>
+                    <!-- 實心星星，代表被加入最我的最愛 -->
+                    <div v-show="parentStar.indexOf(data.SiteName) !== -1"><i class="fas fa-star"></i></div>
+                </a>
+                </div>
+                <div class="card-body">
+                <ul class="list-unstyled">
+                    <li>AQI 指數: {{ data.AQI }}</li>
+                    <li>PM2.5: {{ data['PM2.5'] }}</li>
+                    <li>說明: {{ data.Status }}</li>
+                </ul>
+                {{ data.PublishTime }}
+                </div>
+            </div>
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.1/umd/popper.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+        <script>
+        var child = {
+            template: "#cardComponentTemplate",
+            props: {
+                data: {
+                    type: Object
+                },
+                parentStar: {
+                    type: Array
+                },
+                filter: {
+                    type: String
+                }
+            },
+            data() {
+                return {
+                // star: this.parentStar
+                }
+            },
+            methods: {
+                status(e) {
+                    switch(e) {
+                        case '普通':
+                            return 'status-aqi2'
+                            break
+                        case '對敏感族群不健康':
+                            return 'status-aqi3'
+                            break
+                        case '對所有族群不健康':
+                            return 'status-aqi4'
+                            break
+                        case '非常不健康':
+                            return 'status-aqi5'
+                            break
+                        case '危害':
+                            return 'status-aqi6'
+                            break
+                        default: 
+                            return
+                    }
+                },
+                updateStatus(siteName) {
+                    this.$emit('star', siteName)
+                }
+            }
+    }
+    
+    // API 來源
+    // https://opendata.epa.gov.tw/Data/Contents/AQI/
+    
+    var app = new Vue({
+        el: '#app',
+        data: {
+            AQIdata: [],
+            stared: [],
+            location: ['臺北市','新北市','基隆市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'],
+            filter: '', 
+            attention: false
+        },
+        // 請在此撰寫 JavaScript
+        components: {
+            "card-component": child,
+        },
+        created: function() {
+            this.getData()
+            if (localStorage.getItem("stared") !== null) {
+                this.stared = JSON.parse(localStorage.getItem("stared"))
+            }
+        },
+        methods: {
+            getData() {
+                const vm = this
+                //   const api = 'https://cors-anywhere.herokuapp.com/http://opendata2.epa.gov.tw/AQI.json';
+                const api = 'http://opendata2.epa.gov.tw/AQI.json';
+                        // https 環境下是禁止取得 http 資源
+                        // 可以將資源改成使用 https://cors-anywhere.herokuapp.com/ + url
+                        // 透過 cors-anywhere.herokuapp 協助取得 http 資源，然後轉為 https 供運用
+            
+                // 使用 jQuery ajax
+                $.get(api).then(function( response ) {
+                    vm.AQIdata = response
+                    // console.log(response);
+                });
+            },
+            starStatus(val) {
+                let index = this.stared.indexOf(val)
+                // 若 siteName 不存在的話
+                if(index === -1) {
+                    // 將新的 siteName 加入
+                    this.stared.push(val)
+                // 若 siteName 存在，將其移除
+                } else {
+                    this.stared = this.stared.filter(function(obj) {
+                        // 傳入的 siteName 若存在，則將其剔除
+                        console.log(obj !== val);
+                        return obj !== val
+                    })
+                }
+                // 存入 localStorage
+                localStorage.setItem('stared', JSON.stringify(this.stared))
+            },
+            starAQIData() {
+                let vm = this
+                // 回傳已加星號
+                return vm.AQIdata.filter(obj => {
+                    return vm.stared.indexOf(obj.SiteName) !== -1
+                })
+            },
+            filterAQIData(filter) {
+                let vm = this
+                // 將 filter 丟入所有縣市進行過濾，並取得有存在的
+                return vm.AQIdata.filter(obj => {
+                    return obj.County.indexOf(filter) !== -1
+                })
+            }
+        }
+        });
+    </script>
+    <!-- 
+    狀態對應表
+    '良好',
+    'status-aqi2' '普通',
+    'status-aqi3' '對敏感族群不健康',
+    'status-aqi4' '對所有族群不健康',
+    'status-aqi5' '非常不健康',
+    'status-aqi6' '危害'
+    --> 
+    <style>
+        .status-aqi2 {
+            background-color: #ffff00;
+        }
+        .status-aqi3 {
+            background-color: #ff7e00;
+        }
+        .status-aqi4 {
+            background-color: #ff0000;
+        }
+        .status-aqi5 {
+            background-color: #8f3f97;
+        }
+        .status-aqi6 {
+            background-color: #7e0023;
+        }
+        </style>
+</body>
+</html>
